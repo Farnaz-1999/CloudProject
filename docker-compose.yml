@@ -1,0 +1,93 @@
+version: '3.9'
+
+services:
+
+  identity_db:
+    image: postgres:alpine3.15
+    container_name: identity_db
+    ports:
+      - "127.0.0.1:5442:5432"
+    environment:
+      - POSTGRES_DB=identity_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+    restart: unless-stopped
+    volumes:
+      - identity_db_data:/var/lib/postgresql/data
+    networks:
+      - net_flight
+  
+  flight_db:
+    image: postgres:alpine3.15
+    container_name: flight_db
+    ports:
+      - "127.0.0.1:5443:5432"
+    environment:
+      - POSTGRES_DB=flight_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+    restart: unless-stopped
+    volumes:
+      - flight_db_data:/var/lib/postgresql/data
+    networks:
+      - net_flight
+  
+  analysis_db:
+    image: postgres:alpine3.15
+    container_name: analysis_db
+    ports:
+      - "127.0.0.1:5444:5432"
+    environment:
+      - POSTGRES_DB=analysis_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+    restart: unless-stopped
+    volumes:
+      - analysis_db_data:/var/lib/postgresql/data
+    networks:
+      - net_flight
+
+  identity_service:
+    build: ./identity_service
+    ports:
+      - 8000:8000
+    environment:
+      - POSTGRES_DB=identity_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=identity_db
+    networks:
+      - net_flight
+    depends_on:
+      - identity_db
+
+  flight_service:
+    build: ./flight_service
+    ports:
+      - 8001:8000
+    environment:
+      - POSTGRES_DB=flight_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=flight_db
+    networks:
+      - net_flight
+    depends_on:
+      - flight_db
+
+  analysis_service:
+    build: ./analysis_service
+    ports:
+      - 8002:8000
+    environment:
+      - POSTGRES_DB=analysis_database
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root123
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=analysis_db
+    networks:
+      - net_flight
+    depends_on:
+      - analysis_db
