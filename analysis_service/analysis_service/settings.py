@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'users',
+    'analysis',
 
     'rest_framework',
     'rest_framework_simplejwt',
@@ -98,13 +99,25 @@ if str(os.environ.get('DEPLOY_DOCKER')).lower() in ['yes', 'y', 'true', 't']:
             'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
             'HOST': os.environ.get('POSTGRES_HOST'),
             'PORT': os.environ.get('POSTGRES_PORT'),
-        }
+        },
+        'flight_db': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('FLIGHT_POSTGRES_DB'),
+            'USER': os.environ.get('FLIGHT_POSTGRES_USER'),
+            'PASSWORD': os.environ.get('FLIGHT_POSTGRES_PASSWORD'),
+            'HOST': os.environ.get('FLIGHT_POSTGRES_HOST'),
+            'PORT': os.environ.get('FLIGHT_POSTGRES_PORT'),
+        },
     }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+        },
+        'flight_db': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR.parent / 'flight_service' / 'db.sqlite3',
         }
     }
 
