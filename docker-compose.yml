@@ -52,6 +52,8 @@ services:
     ports:
       - 8000:8000
     environment:
+      - DEPLOY_DOCKER=true
+      - JWT_SIGNING_KEY=key123
       - POSTGRES_DB=identity_database
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root123
@@ -67,6 +69,8 @@ services:
     ports:
       - 8001:8000
     environment:
+      - DEPLOY_DOCKER=true
+      - JWT_SIGNING_KEY=key123
       - POSTGRES_DB=flight_database
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root123
@@ -82,14 +86,23 @@ services:
     ports:
       - 8002:8000
     environment:
+      - DEPLOY_DOCKER=true
+      - JWT_SIGNING_KEY=key123
       - POSTGRES_DB=analysis_database
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root123
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=analysis_db
+      - FLIGHT_POSTGRES_DB=flight_database
+      - FLIGHT_POSTGRES_USER=postgres
+      - FLIGHT_POSTGRES_PASSWORD=root123
+      - FLIGHT_POSTGRES_PORT=5432
+      - FLIGHT_POSTGRES_HOST=flight_db
     networks:
       - net_flight
     depends_on:
+      - flight_db
+      - flight_service
       - analysis_db
 
 networks:

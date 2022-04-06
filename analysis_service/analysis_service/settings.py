@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'analysis_service.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-if str(os.environ.get('DEPLOY_DOCKER')).lower() in ['yes', 'y', 'true', 't']:
+if str(os.environ.get('DEPLOY_DOCKER')).lower() in ['yes', 'y', 'true', 't', '1']:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
