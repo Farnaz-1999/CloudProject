@@ -1,5 +1,4 @@
 import os
-from time import time
 import django
 import pandas as pd
 
@@ -83,7 +82,8 @@ if __name__ == '__main__':
                 timestamp=timestamp,
                 carrier=carrier,
                 sit_class=row['class'],
-                plane_type=plane_type
+                plane_type=plane_type,
+                price=row['price'],
             )
         except Flight.DoesNotExist:
             Flight.objects.create(
@@ -92,7 +92,8 @@ if __name__ == '__main__':
                 timestamp=timestamp,
                 carrier=carrier,
                 sit_class=row['class'],
-                plane_type=plane_type
+                plane_type=plane_type,
+                price=row['price']
             )
 
     print('Finished loading data')

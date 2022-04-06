@@ -27,3 +27,4 @@ class Flight(models.Model):
     plane_type = models.ForeignKey(
         PlaneType, on_delete=models.CASCADE, related_name='flights'
     )
+    price = models.PositiveIntegerField()

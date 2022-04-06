@@ -91,3 +91,11 @@ services:
       - net_flight
     depends_on:
       - analysis_db
+
+networks:
+  net_flight:
+
+volumes:
+  identity_db_data:
+  flight_db_data:
+  analysis_db_data:
