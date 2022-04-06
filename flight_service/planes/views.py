@@ -1,13 +1,69 @@
+from importlib.abc import ResourceReader
 from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework import status
 
 from drf_spectacular.utils import extend_schema
 
-from .serializers import FlightSerializer, FlightFilters
-from .models import Flight
+from .serializers import FlightSerializer, FlightFilters, ReservePlaneSerializer
+from .models import Flight, PlaneType, ReservePlane
+
+class ReservePlaneAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservePlaneSerializer
+
+    @extend_schema(
+        request=None
+    )
+    def post(self, request, plane_type):
+        try:
+            plane_type = PlaneType.objects.get(
+                name=plane_type
+            )
+        except PlaneType.DoesNotExist:
+            raise NotFound
+
+        if plane_type.get_remained_capacity() < 1:
+            raise ValidationError('Capacity is full')
+        
+        reserved = ReservePlane.objects.create(
+            user_id=request.user.id,
+            plane_type=plane_type
+        )
+
+        return Response(
+            self.serializer_class(reserved).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+class DeleteReserve(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservePlaneSerializer
+
+    def delete(self, request, pk):
+        try:
+            reserved = ReservePlane.objects.get(pk=pk)
+        except ReservePlane.DoesNotExist:
+            raise NotFound
+        reserved.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ListReserves(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservePlaneSerializer
+
+    def get(self, request):
+        queryset = ReservePlane.objects.filter(
+            user_id=request.user.id
+        )
+        serializer = self.serializer_class(
+            queryset, many=True
+        )
+        return Response(serializer.data)
 
 class Flights(APIView):
     permission_classes = [IsAuthenticated]

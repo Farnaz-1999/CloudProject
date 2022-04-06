@@ -4,6 +4,19 @@ class PlaneType(models.Model):
     name = models.CharField(max_length=64, unique=True)
     capacity = models.PositiveIntegerField()
 
+    @property
+    def remained_capacity(self, ):
+        return self.get_remained_capacity()
+        
+    def get_remained_capacity(self, ):
+        return self.capacity - (ReservePlane.objects.filter(plane_type=self).count() or 0)
+
+class ReservePlane(models.Model):
+    plane_type = models.ForeignKey(
+        PlaneType, on_delete=models.CASCADE, related_name='reserves'
+    )
+    user_id = models.CharField(max_length=128)
+
 class Carrier(models.Model):
     name = models.CharField(max_length=64, unique=True)
     rating = models.PositiveIntegerField()
