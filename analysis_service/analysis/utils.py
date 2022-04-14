@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from rest_framework.exceptions import NotFound
 
-from .models import PlanesFlight, PlanesAirport
+from .replica_models import PlanesFlight, PlanesAirport
 
 def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone.datetime) -> dict:
     try:
