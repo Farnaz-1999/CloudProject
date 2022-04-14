@@ -1,5 +1,6 @@
-from calendar import month
+from sqlite3 import SQLITE_CREATE_TRIGGER
 from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 from rest_framework.exceptions import NotFound
 
@@ -14,7 +15,6 @@ def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone
         raise NotFound
 
     data = []
-
     start_month = timezone.datetime(year=date_start.year, month=date_start.month, day=1)
     end_month = timezone.datetime(year=date_end.year, month=date_end.month, day=1)
 
@@ -44,9 +44,6 @@ def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone
             ).count(),
             'date': str(start_month),
         })
-        start_month = timezone.datetime(
-            year=start_month.year,
-            month=(start_month.month+1)%12,
-            day=1,
-        )
+        start_month = start_month + relativedelta(months=1)
+
     return data
