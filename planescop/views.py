@@ -1,8 +1,6 @@
 from datetime import datetime
 import matplotlib.pyplot as plt
-import numpy as np
 
-from django.http import HttpResponse, HttpResponseRedirect
 from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,7 +13,7 @@ from drf_spectacular.utils import extend_schema
 
 from .serializers import FlightSerializer, FlightFilters, ReservePlaneSerializer
 from .models import Airport, Flight, PlaneType, ReservePlane
-from .utils import traffic
+from ..analysis import utils
 
 class ReservePlaneAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -27,30 +25,25 @@ class ReservePlaneAPI(APIView):
     def post(self, request, time_start, time_end, airport_name1, airport_name2):
         dt_S = datetime.strptime(time_start, '%Y-%m-%d')
         dt_E = datetime.strptime(time_end, '%Y-%m-%d')
-        A1Data=traffic(airport_name1,dt_S,dt_E)
-        A2Data=traffic(airport_name2,dt_S,dt_E)
+        A1Data=utils.traffic(airport_name1,dt_S,dt_E)
+        A2Data=utils.traffic(airport_name2,dt_S,dt_E)
 
-        print(A1Data)
-        print(A2Data)
+        # data for plotting
+        x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        y = [5, 7, 8, 1, 4, 9, 6, 3, 5, 2, 1, 8]
         
-        bars = ["CityIn", "CityOut", "AirportIn", "AirportOut"]
-        data1 = []
-        data2 = []
-        for i in range(1,5):
-            print(list(A1Data[0].values())[i])
-            data1.append(list(A1Data[0].values())[i])
-            print(list(A2Data[0].values())[i])
-            data2.append(list(A2Data[0].values())[i])
+        plt.plot(x, y)
+        
+        plt.xlabel('x-axis label')
+        plt.ylabel('y-axis label')
+        plt.title('Matplotlib Example')
+        
+        plt.savefig("output.jpg")
 
-        x_axis = np.arange(len(bars))
-        plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=airport_name1+"-"+A1Data[0]['city'])
-        plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=airport_name2+"-"+A2Data[0]['city'])
-        plt.xticks(x_axis,bars)
-        plt.legend()
-        plt.savefig("./media/output.jpg")
-
-        return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/output.jpg")
-
+        # return Response(
+        #     self.serializer_class(reserved).data,
+        #     status=status.HTTP_201_CREATED
+        # )
     
 class DeleteReserve(APIView):
     permission_classes = [IsAuthenticated]

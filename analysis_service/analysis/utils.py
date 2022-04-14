@@ -31,7 +31,6 @@ def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone
                 timestamp__year=start_month.year,
                 timestamp__month=start_month.month,
             ).count(),
-            'airport': airport.name,
             'airport_input': PlanesFlight.objects.using('flight_db').filter(
                 dest_airport=airport,
                 timestamp__year=start_month.year,
