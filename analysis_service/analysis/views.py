@@ -15,9 +15,9 @@ from drf_spectacular.utils import extend_schema
 
 from .serializers import FlightSerializer, FlightFilters, ReservePlaneSerializer
 from .models import Airport, Flight, PlaneType, ReservePlane
-from .utils import traffic
+from .utils import flights, traffic, sale
 
-class ReservePlaneAPI(APIView):
+class TrafficAnalysis(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservePlaneSerializer
 
@@ -30,28 +30,100 @@ class ReservePlaneAPI(APIView):
         A1Data=traffic(airport_name1,dt_S,dt_E)
         A2Data=traffic(airport_name2,dt_S,dt_E)
 
+        if(len(A1Data)!=[] and len(A2Data)!=[]):
+            bars_Title = ["CIn", "COut", "AIn", "AOut"]
+            bars=[]
+            data1 = []
+            data2 = []
+
+            for j in range(len(A1Data)):
+                for i in range(1,5):
+                    bars.append(bars_Title[i-1]+"-"+str(j))
+                    data1.append(list(A1Data[j].values())[i])
+                    data2.append(list(A2Data[j].values())[i])
+
+            x_axis = np.arange(len(bars))
+            plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=airport_name1+"-"+A1Data[0]['city'])
+            plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=airport_name2+"-"+A2Data[0]['city'])
+            plt.xticks(x_axis,bars)
+            plt.legend()
+            plt.savefig("./media/output.jpg")
+
+            return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/output.jpg")
+        else:
+            return HttpResponse("No data in this time range!!!")
+
+class CarrierAnalysis(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservePlaneSerializer
+    
+    @extend_schema(
+        request=None
+    )
+    def post(self, request, time_start, time_end, carrier_name1, carrier_name2):
+        dt_S = datetime.strptime(time_start, '%Y-%m-%d')
+        dt_E = datetime.strptime(time_end, '%Y-%m-%d')
+        A1Data=sale(carrier_name1,dt_S,dt_E)
+        A2Data=sale(carrier_name2,dt_S,dt_E)
+
         print(A1Data)
         print(A2Data)
-        
-        bars = ["CityIn", "CityOut", "AirportIn", "AirportOut"]
-        data1 = []
-        data2 = []
-        for i in range(1,5):
-            print(list(A1Data[0].values())[i])
-            data1.append(list(A1Data[0].values())[i])
-            print(list(A2Data[0].values())[i])
-            data2.append(list(A2Data[0].values())[i])
 
-        x_axis = np.arange(len(bars))
-        plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=airport_name1+"-"+A1Data[0]['city'])
-        plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=airport_name2+"-"+A2Data[0]['city'])
-        plt.xticks(x_axis,bars)
-        plt.legend()
-        plt.savefig("./media/output.jpg")
+        # if(len(A1Data)!=[] and len(A2Data)!=[]):
+        #     bars=[]
+        #     data1 = []
+        #     data2 = []
 
-        return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/output.jpg")
+        #     for j in range(len(A1Data)):
+        #         bars.append(j)
+        #         //data1.append(A1Data[j]['total'])
+        #         //data2.append(A2Data[j]['total'])
 
-    
+        #     x_axis = np.arange(len(bars))
+        #     plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=carrier_name1)
+        #     plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=carrier_name2)
+        #     plt.xticks(x_axis,bars)
+        #     plt.legend()
+        #     plt.savefig("./media/coutput.jpg")
+
+        #     return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/coutput.jpg")
+        # else:
+        return HttpResponse("No data in this time range!!!")
+
+class FlightAnalysis(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservePlaneSerializer
+
+    @extend_schema(
+        request=None
+    )
+    def post(self, request, time_start, time_end, airplane_name1, airplane_name2):
+        dt_S = datetime.strptime(time_start, '%Y-%m-%d')
+        dt_E = datetime.strptime(time_end, '%Y-%m-%d')
+        A1Data=flights(airplane_name1,dt_S,dt_E)
+        A2Data=flights(airplane_name2,dt_S,dt_E)
+
+        if(len(A1Data)!=[] and len(A2Data)!=[]):
+            bars=[]
+            data1 = []
+            data2 = []
+
+            for j in range(len(A1Data)):
+                bars.append(j)
+                data1.append(A1Data[j]['flights'])
+                data2.append(A2Data[j]['flights'])
+
+            x_axis = np.arange(len(bars))
+            plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=airplane_name1)
+            plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=airplane_name2)
+            plt.xticks(x_axis,bars)
+            plt.legend()
+            plt.savefig("./media/foutput.jpg")
+
+            return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/foutput.jpg")
+        else:
+            return HttpResponse("No data in this time range!!!")
+
 class DeleteReserve(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservePlaneSerializer

@@ -13,6 +13,13 @@ class ReservePlaneSerializer(serializers.ModelSerializer):
         model = ReservePlane
         fields = '__all__'
 
+class CarrierSerializer(serializers.ModelSerializer):
+    plane_type = PlaneTypeSerializer()
+    class Meta:
+        model = ReservePlane
+        fields = '__all__'
+
+
 class FlightSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Flight

@@ -1,10 +1,13 @@
 from sqlite3 import SQLITE_CREATE_TRIGGER
 from django.utils import timezone
+from django.db.models import Sum
 from dateutil.relativedelta import relativedelta
 
 from rest_framework.exceptions import NotFound
 
-from .replica_models import PlanesFlight, PlanesAirport
+from analysis.models import Carrier, PlaneType
+
+from .replica_models import PlanesFlight, PlanesAirport, PlanesPlanetype
 
 def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone.datetime) -> dict:
     try:
@@ -38,6 +41,47 @@ def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone
             ).count(),
             'airport_output': PlanesFlight.objects.using('flight_db').filter(
                 origin_airport=airport,
+                timestamp__year=start_month.year,
+                timestamp__month=start_month.month,
+            ).count(),
+            'date': str(start_month),
+        })
+        start_month = start_month + relativedelta(months=1)
+
+    return data
+
+def sale(carrier_name: str, date_start: timezone.datetime, date_end: timezone.datetime) -> dict:
+    data = []
+    start_month = timezone.datetime(year=date_start.year, month=date_start.month, day=1)
+    end_month = timezone.datetime(year=date_end.year, month=date_end.month, day=1)
+
+    while start_month <= end_month:
+        data.append({
+            'carrier': carrier_name,
+            'total': (PlanesFlight.objects.using('flight_db').filter(
+                            carrier__name=carrier_name,
+                            timestamp__year=start_month.year,
+                            timestamp__month=start_month.month,
+                        )
+                        .aggregate(
+                            total=Sum('price', field="price*plane_type.capacity")
+                        )['total']
+            ),
+            'date': str(start_month)
+        })
+        start_month = start_month + relativedelta(months=1)
+    return data
+
+def flights(airplane_name: str, date_start: timezone.datetime, date_end: timezone.datetime) -> dict:
+    data = []
+    start_month = timezone.datetime(year=date_start.year, month=date_start.month, day=1)
+    end_month = timezone.datetime(year=date_end.year, month=date_end.month, day=1)
+
+    while start_month <= end_month:
+        data.append({
+            'plane': airplane_name,
+            'flights': PlanesFlight.objects.using('flight_db').filter(
+                plane_type__name=airplane_name,
                 timestamp__year=start_month.year,
                 timestamp__month=start_month.month,
             ).count(),
