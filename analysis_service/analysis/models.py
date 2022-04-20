@@ -1,43 +1,58 @@
+# This is an auto-generated Django model module.
+# You'll have to do the following manually to clean this up:
+#   * Rearrange models' order
+#   * Make sure each model has one field with primary_key=True
+#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
+#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+# Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-class PlaneType(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-    capacity = models.PositiveIntegerField()
 
-    @property
-    def remained_capacity(self, ):
-        return self.get_remained_capacity()
-        
-    def get_remained_capacity(self, ):
-        return self.capacity - (ReservePlane.objects.filter(plane_type=self).count() or 0)
-
-class ReservePlane(models.Model):
-    plane_type = models.ForeignKey(
-        PlaneType, on_delete=models.CASCADE, related_name='reserves'
-    )
-    user_id = models.CharField(max_length=128)
-
-class Carrier(models.Model):
-    name = models.CharField(max_length=64, unique=True)
-    rating = models.PositiveIntegerField()
-
-class Airport(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+class PlanesAirport(models.Model):
+    name = models.CharField(unique=True, max_length=64)
     city = models.CharField(max_length=128)
 
-class Flight(models.Model):
-    origin_airport = models.ForeignKey(
-        Airport, on_delete=models.CASCADE, related_name='out_flights'
-    )
-    dest_airport = models.ForeignKey(
-        Airport, on_delete=models.CASCADE, related_name='in_flights'
-    )
+    class Meta:
+        managed = False
+        db_table = 'planes_airport'
+
+
+class PlanesCarrier(models.Model):
+    name = models.CharField(unique=True, max_length=64)
+    rating = models.PositiveIntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'planes_carrier'
+
+
+class PlanesFlight(models.Model):
     timestamp = models.DateTimeField()
-    carrier = models.ForeignKey(
-        Carrier, on_delete=models.CASCADE, related_name='flights'
-    )
     sit_class = models.CharField(max_length=16)
-    plane_type = models.ForeignKey(
-        PlaneType, on_delete=models.CASCADE, related_name='flights'
-    )
     price = models.PositiveIntegerField()
+    carrier = models.ForeignKey(PlanesCarrier, models.DO_NOTHING)
+    dest_airport = models.ForeignKey(PlanesAirport, models.DO_NOTHING, related_name='input_flights')
+    origin_airport = models.ForeignKey(PlanesAirport, models.DO_NOTHING, related_name='output_flights')
+    plane_type = models.ForeignKey('PlanesPlanetype', models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'planes_flight'
+
+
+class PlanesPlanetype(models.Model):
+    name = models.CharField(unique=True, max_length=64)
+    capacity = models.PositiveIntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'planes_planetype'
+
+
+class PlanesReserveplane(models.Model):
+    user_id = models.CharField(max_length=128)
+    flight = models.ForeignKey(PlanesFlight, models.DO_NOTHING, blank=True, null=True, related_name='reserves')
+
+    class Meta:
+        managed = False
+        db_table = 'planes_reserveplane'

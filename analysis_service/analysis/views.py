@@ -14,7 +14,7 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
 from .serializers import FlightSerializer, FlightFilters, ReservePlaneSerializer
-from .models import Airport, Flight, PlaneType, ReservePlane
+from .models import PlanesAirport, PlanesFlight, PlanesPlanetype, PlanesReserveplane
 from .utils import flights, traffic, sale
 
 class TrafficAnalysis(APIView):
@@ -130,8 +130,8 @@ class DeleteReserve(APIView):
 
     def delete(self, request, pk):
         try:
-            reserved = ReservePlane.objects.get(pk=pk)
-        except ReservePlane.DoesNotExist:
+            reserved = PlanesReserveplane.objects.get(pk=pk)
+        except PlanesReserveplane.DoesNotExist:
             raise NotFound
         reserved.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -141,7 +141,7 @@ class ListReserves(APIView):
     serializer_class = ReservePlaneSerializer
 
     def get(self, request):
-        queryset = ReservePlane.objects.filter(
+        queryset = PlanesReserveplane.objects.filter(
             user_id=request.user.id
         )
         serializer = self.serializer_class(
@@ -163,7 +163,7 @@ class Flights(APIView):
         param_serializer.is_valid(raise_exception=True)
         filters = param_serializer.validated_data
 
-        queryset = Flight.objects.all().order_by('-timestamp')
+        queryset = PlanesFlight.objects.all().order_by('-timestamp')
         
         if filters.get('airport_name'):
             queryset = queryset.filter(

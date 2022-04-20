@@ -1,13 +1,14 @@
 from sqlite3 import SQLITE_CREATE_TRIGGER
 from django.utils import timezone
-from django.db.models import Sum
+from django.db import models
+
 from dateutil.relativedelta import relativedelta
 
 from rest_framework.exceptions import NotFound
 
-from analysis.models import Carrier, PlaneType
+# from analysis.models import Carrier, PlaneType
 
-from .replica_models import PlanesFlight, PlanesAirport, PlanesPlanetype
+from .models import PlanesFlight, PlanesAirport, PlanesPlanetype, PlanesReserveplane
 
 def traffic(airport_name: str, date_start: timezone.datetime, date_end: timezone.datetime) -> dict:
     try:
@@ -64,7 +65,7 @@ def sale(carrier_name: str, date_start: timezone.datetime, date_end: timezone.da
                             timestamp__month=start_month.month,
                         )
                         .aggregate(
-                            total=Sum('price', field="price*plane_type.capacity")
+                            total=models.Sum('price', field="price*plane_type.capacity")
                         )['total']
             ),
             'date': str(start_month)
@@ -90,3 +91,15 @@ def flights(airplane_name: str, date_start: timezone.datetime, date_end: timezon
         start_month = start_month + relativedelta(months=1)
 
     return data
+
+def test_query():
+    """
+        query for counting each flight reserves
+    """
+
+    q = PlanesFlight.objects.using('flight_db').annotate(
+        reserve_count=models.Count('reserves')
+    ).all()
+    f = q.get(pk=4567)
+    print(f.reserve_count)
+    print(q)
