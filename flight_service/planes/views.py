@@ -11,34 +11,7 @@ from drf_spectacular.utils import extend_schema
 from .serializers import FlightSerializer, FlightFilters, ReservePlaneSerializer
 from .models import Flight, PlaneType, ReservePlane
 
-class ReservePlaneAPI(APIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ReservePlaneSerializer
 
-    @extend_schema(
-        request=None
-    )
-    def post(self, request, plane_type):
-        try:
-            plane_type = PlaneType.objects.get(
-                name=plane_type
-            )
-        except PlaneType.DoesNotExist:
-            raise NotFound
-
-        if plane_type.get_remained_capacity() < 1:
-            raise ValidationError('Capacity is full')
-        
-        reserved = ReservePlane.objects.create(
-            user_id=request.user.id,
-            plane_type=plane_type
-        )
-
-        return Response(
-            self.serializer_class(reserved).data,
-            status=status.HTTP_201_CREATED
-        )
-    
 class DeleteReserve(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservePlaneSerializer
@@ -51,7 +24,7 @@ class DeleteReserve(APIView):
         reserved.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class ListReserves(APIView):
+class ReservesView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReservePlaneSerializer
 
@@ -64,6 +37,24 @@ class ListReserves(APIView):
         )
         return Response(serializer.data)
 
+    def post(self, request):
+        serializer = ReservePlaneSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        flight = serializer.validated_data['flight']
+
+        if flight.get_remained_capacity() < 1:
+            raise ValidationError('Capacity is full')
+        
+        reserved = ReservePlane.objects.create(
+            user_id=request.user.id,
+            flight=flight
+        )
+
+        return Response(
+            self.serializer_class(reserved).data,
+            status=status.HTTP_201_CREATED
+        )
+    
 class Flights(APIView):
     permission_classes = [IsAuthenticated]
 

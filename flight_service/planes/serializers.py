@@ -1,23 +1,22 @@
 from rest_framework import serializers
-from .models import Flight, ReservePlane, PlaneType
+from .models import Flight, ReservePlane, PlaneType, Flight
 
-class PlaneTypeSerializer(serializers.ModelSerializer):
+class FlightSerializer(serializers.ModelSerializer):
     remained_capacity = serializers.ReadOnlyField()
-    class Meta:
-        model = PlaneType
-        fields = '__all__'
-
-class ReservePlaneSerializer(serializers.ModelSerializer):
-    plane_type = PlaneTypeSerializer()
-    class Meta:
-        model = ReservePlane
-        fields = '__all__'
-
-class FlightSerializer(serializers.ModelSerializer):    
     class Meta:
         model = Flight
         fields = '__all__'
         depth=1
+
+class ReservePlaneSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ReservePlane
+        fields = '__all__'
+        read_only_fields = (
+            'id', 
+            'user_id'
+        )
 
 class FlightFilters(serializers.Serializer):
     limit = serializers.IntegerField(max_value=500, min_value=1, default=100)
