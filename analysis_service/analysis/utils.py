@@ -56,20 +56,30 @@ def sale(carrier_name: str, date_start: timezone.datetime, date_end: timezone.da
     start_month = timezone.datetime(year=date_start.year, month=date_start.month, day=1)
     end_month = timezone.datetime(year=date_end.year, month=date_end.month, day=1)
 
+
+    test_query()
     while start_month <= end_month:
         data.append({
             'carrier': carrier_name,
-            'total': (PlanesFlight.objects.using('flight_db').filter(
-                            carrier__name=carrier_name,
-                            timestamp__year=start_month.year,
-                            timestamp__month=start_month.month,
-                        )
-                        .aggregate(
-                            total=models.Sum('price', field="price*plane_type.capacity")
-                        )['total']
-            ),
+            # 'total': (PlanesFlight.objects.using('flight_db').filter(
+            #                 carrier__name=carrier_name,
+            #                 timestamp__year=start_month.year,
+            #                 timestamp__month=start_month.month,
+            #             )
+            #             .aggregate(
+            #                 total=models.Sum('price', field="price*plane_type.capacity")
+            #             )['total']
+            # ),
+            'sale': PlanesFlight.objects.using('flight_db').annotate(
+                reserve_count=models.Count('reserves')
+                ).filter(
+                    carrier__name=carrier_name,
+                    timestamp__year=start_month.year,
+                    timestamp__month=start_month.month,
+                ).count(),#.get(pk=4567)
             'date': str(start_month)
         })
+
         start_month = start_month + relativedelta(months=1)
     return data
 
@@ -100,6 +110,6 @@ def test_query():
     q = PlanesFlight.objects.using('flight_db').annotate(
         reserve_count=models.Count('reserves')
     ).all()
-    f = q.get(pk=4567)
+    f = q.get(pk=1087)
     print(f.reserve_count)
     print(q)

@@ -48,6 +48,7 @@ class TrafficAnalysis(APIView):
             plt.xticks(x_axis,bars)
             plt.legend()
             plt.savefig("./media/output.jpg")
+            plt.close()
 
             return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/output.jpg")
         else:
@@ -69,26 +70,27 @@ class CarrierAnalysis(APIView):
         print(A1Data)
         print(A2Data)
 
-        # if(len(A1Data)!=[] and len(A2Data)!=[]):
-        #     bars=[]
-        #     data1 = []
-        #     data2 = []
+        if(len(A1Data)!=[] and len(A2Data)!=[]):
+            bars=[]
+            data1 = []
+            data2 = []
 
-        #     for j in range(len(A1Data)):
-        #         bars.append(j)
-        #         //data1.append(A1Data[j]['total'])
-        #         //data2.append(A2Data[j]['total'])
+            for j in range(len(A1Data)):
+                bars.append(j)
+                data1.append(A1Data[j]['sale'])
+                data2.append(A2Data[j]['sale'])
 
-        #     x_axis = np.arange(len(bars))
-        #     plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=carrier_name1)
-        #     plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=carrier_name2)
-        #     plt.xticks(x_axis,bars)
-        #     plt.legend()
-        #     plt.savefig("./media/coutput.jpg")
+            x_axis = np.arange(len(bars))
+            plt.bar(x_axis -0.2, data1, width=0.4, color='yellow', label=carrier_name1)
+            plt.bar(x_axis +0.2, data2, width=0.4, color='red', label=carrier_name2)
+            plt.xticks(x_axis,bars)
+            plt.legend()
+            plt.savefig("./media/coutput.jpg")
+            plt.close()
 
-        #     return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/coutput.jpg")
-        # else:
-        return HttpResponse("No data in this time range!!!")
+            return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/coutput.jpg")
+        else:
+            return HttpResponse("No data in this time range!!!")
 
 class FlightAnalysis(APIView):
     permission_classes = [IsAuthenticated]
@@ -119,6 +121,7 @@ class FlightAnalysis(APIView):
             plt.xticks(x_axis,bars)
             plt.legend()
             plt.savefig("./media/foutput.jpg")
+            plt.close()
 
             return HttpResponseRedirect(redirect_to="http://127.0.0.1:8000/media/foutput.jpg")
         else:
