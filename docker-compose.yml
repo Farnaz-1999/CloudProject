@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.3'
 
 services:
 
@@ -6,7 +6,9 @@ services:
     image: postgres:alpine3.15
     container_name: identity_db
     ports:
-      - "127.0.0.1:5442:5432"
+      - "5442:5432"
+      # 127.0.0.1:
+
     environment:
       - POSTGRES_DB=identity_database
       - POSTGRES_USER=postgres
@@ -21,7 +23,8 @@ services:
     image: postgres:alpine3.15
     container_name: flight_db
     ports:
-      - "127.0.0.1:5443:5432"
+      - "5443:5432"
+      # 127.0.0.1:
     environment:
       - POSTGRES_DB=flight_database
       - POSTGRES_USER=postgres
@@ -36,7 +39,8 @@ services:
     image: postgres:alpine3.15
     container_name: analysis_db
     ports:
-      - "127.0.0.1:5444:5432"
+      - "5444:5432"
+      # 127.0.0.1:
     environment:
       - POSTGRES_DB=analysis_database
       - POSTGRES_USER=postgres
@@ -48,9 +52,10 @@ services:
       - net_flight
 
   identity_service:
-    build: ./identity_service
+    # build: ./identity_service
+    image: cloudproject_identity_service:latest
     ports:
-      - 8000:8000
+      - 8004:8000
     environment:
       - DEPLOY_DOCKER=true
       - JWT_SIGNING_KEY=key123
@@ -63,9 +68,14 @@ services:
       - net_flight
     depends_on:
       - identity_db
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.hostname == docker-desktop]
 
   flight_service:
-    build: ./flight_service
+    # build: ./flight_service
+    image: cloudproject_flight_service:latest
     ports:
       - 8001:8000
     environment:
@@ -82,7 +92,8 @@ services:
       - flight_db
 
   analysis_service:
-    build: ./analysis_service
+    # build: ./analysis_service
+    image: cloudproject_analysis_service:latest
     ports:
       - 8002:8000
     environment:
